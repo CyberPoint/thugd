@@ -1,0 +1,112 @@
+---
+# ubuntu/xenial64
+
+  - hosts: all
+    become: yes
+
+    tasks:
+    - name: hostname
+      hostname:
+        name: thugd
+
+    - name: /etc/hosts - hostname
+      replace:
+        dest: "/etc/hosts"
+        regexp: "127.0.0.1.*"
+        replace: "127.0.0.1 localhost thugd"
+
+    - name: /etc/hosts - rabbitmq
+      lineinfile:
+        dest: "/etc/hosts"
+        line: "{{item}}"
+        state: present
+      with_items:
+      - '{{ansible_docker0["ipv4"]["address"]}} rabbitmq mongodb'
+
+    - name: prompt
+      lineinfile:
+        dest: "~/.profile"
+        line: "PS1='\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ '"
+      become: ubuntu
+
+    - name: create files
+      file:
+        state: touch
+        dest: "{{item}}"
+      with_items:
+      - .Xauthority
+      - .hushlogin
+      become: ubuntu
+
+    - name: docker apt-key
+      apt_key:
+        keyserver: hkp://ha.pool.sks-keyservers.net:80
+        id: 58118E89F3A912897C070ADBF76221572C52609D
+        state: present
+
+    - name: docker apt-repo
+      apt_repository:
+        repo: "deb https://apt.dockerproject.org/repo ubuntu-xenial main"
+        state: present
+
+    - name: update system
+      apt:
+        update_cache: yes
+        cache_valid_time: 86400
+        upgrade: full
+
+    - name: remove packages
+      apt:
+        name: "{{item}}"
+        state: absent
+      with_items:
+      - augeas-lenses
+      - bundler
+      - chef
+      - chef-zero
+      - erubis
+      - facter
+      - puppet-common
+      - ruby
+      - ruby1.9.1-dev
+
+    - name: system packages
+      apt:
+        name: "{{item}}"
+        state: latest
+      with_items:
+      - docker-engine
+      - git
+      - lsof
+      - mongodb
+      - nmap
+      - python-pip
+      - python3
+      - python3-pip
+      - python3-pika
+      - tcpdump
+      - tmux
+      - tree
+      - vim
+      - xsel
+
+    - name: mongodb bind_ip
+      replace:
+        dest: /etc/mongodb.conf
+        regexp: "^bind_ip.*"
+        replace: "bind_ip = 0.0.0.0"
+      register: mongodb
+
+    - name: mongodb service
+      service:
+        name: mongodb
+        state: restart
+      when: mongodb.changed
+
+    - name: python packages
+      pip:
+        name: "{{item}}"
+        state: latest
+      with_items:
+      - docker-compose
+      - pika

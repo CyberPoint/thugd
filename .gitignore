@@ -1,0 +1,7 @@
+.vagrant/
+data/
+logs/
+*.json
+*.pyc
+*.swp
+*.log
