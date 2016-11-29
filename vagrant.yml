@@ -4,6 +4,10 @@
   - hosts: all
     become: yes
 
+    vars:
+    - user: ubuntu
+    - home: "/home/{{user}}"
+
     tasks:
     - name: hostname
       hostname:
@@ -15,19 +19,11 @@
         regexp: "127.0.0.1.*"
         replace: "127.0.0.1 localhost thugd"
 
-    - name: /etc/hosts - rabbitmq
-      lineinfile:
-        dest: "/etc/hosts"
-        line: "{{item}}"
-        state: present
-      with_items:
-      - '{{ansible_docker0["ipv4"]["address"]}} rabbitmq mongodb'
-
     - name: prompt
       lineinfile:
         dest: "~/.profile"
         line: "PS1='\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ '"
-      become: ubuntu
+      become: "{{user}}"
 
     - name: create files
       file:
@@ -36,7 +32,7 @@
       with_items:
       - .Xauthority
       - .hushlogin
-      become: ubuntu
+      become: "{{user}}"
 
     - name: docker apt-key
       apt_key:
@@ -100,7 +96,7 @@
     - name: mongodb service
       service:
         name: mongodb
-        state: restart
+        state: restarted
       when: mongodb.changed
 
     - name: python packages
@@ -110,3 +106,23 @@
       with_items:
       - docker-compose
       - pika
+
+    - name: update facts
+      setup:
+        gather_subset: network
+
+    - name: /etc/hosts - rabbitmq
+      lineinfile:
+        dest: "/etc/hosts"
+        line: "{{item}}"
+        state: present
+      with_items:
+      - "{{ansible_docker0['ipv4']['address']}} rabbitmq mongodb"
+
+    - name: docker-compose up
+      docker_service:
+        project_name: "thugd"
+        project_src: "{{home}}/data"
+        scale:
+          thuglet: 3
+        state: present
