@@ -15,7 +15,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "forwarded_port", guest: 27017, host: 27017 # mongodb
 
   config.vm.provider "virtualbox" do |vb|
-    vb.name = "dev"
+    vb.name = "thugd"
     vb.memory = "4096"
     vb.cpus = "2"
     vb.gui = false
