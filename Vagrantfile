@@ -29,6 +29,4 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ansible.verbose = false
     ansible.sudo = true
   end
-
-  config.vm.synced_folder ".", "/home/ubuntu/data"
 end
