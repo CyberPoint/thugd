@@ -52,36 +52,26 @@ class DistributedThug(object):
 
     def connect(self):
         """
-        convenience function for _connect and _prepare methods
-            with multiple connection attempts
+        connection and queue preparation with multiple connection attempts
         """
         while True:
             try:
-                self._connect()
+                # amqp connection attempt
+                credentials = pika.PlainCredentials(self.username, self.password)
+                parameters = pika.ConnectionParameters(
+                    host = self.hostname,
+                    credentials = credentials,
+                    heartbeat_interval = 0
+                )
+                self.connection = pika.BlockingConnection(parameters)
+                self.channel = self.connection.channel()
                 break
             except pika.exceptions.ConnectionClosed:
                 log = console_r("! Failed to connect. Trying again.")
                 logging.warn(log)
                 time.sleep(3)
-        self._prepare()
 
-    def _connect(self):
-        """
-        connects to rabbitmq
-        """
-        credentials = pika.PlainCredentials(self.username, self.password)
-        parameters = pika.ConnectionParameters(
-            host = self.hostname,
-            credentials = credentials,
-            heartbeat_interval = 0
-        )
-        self.connection = pika.BlockingConnection(parameters)
-        self.channel = self.connection.channel()
-
-    def _prepare(self):
-        """
-        message queue preparation
-        """
+        # declare queues
         self.task_qs = self.channel.queue_declare(queue=self.task_queue, durable=True)
         self.resp_qs = self.channel.queue_declare(queue=self.resp_queue, durable=True)
         self.resp_qs = self.channel.queue_declare(queue=self.skip_queue, durable=True)
