@@ -11,6 +11,7 @@ JSON task files go here
     "-t", "50",
     "-u", "win7ie90"
   ],
+  "timeout": 1800,
   "urls": [
     "http://test.test/test1",
     "http://test.test/test2",

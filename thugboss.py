@@ -35,15 +35,18 @@ class ThugBoss(thugd.DistributedThug):
         self.tasks = []
         self.pending = 0
 
-    def load_tasks(self, jsonfile, opts=None):
+    def load_tasks(self, jsonfile, **kwargs):
         """
         generates tasks from input json file
             if an 'opts' key exists, it will be applied to each url
 
         @jsonfile: json file containing thug opts and urls
         """
+        opts = kwargs.get("opts")
         if opts:
             opts = opts.split()
+
+        timeout = kwargs.get("timeout")
 
         if os.access(jsonfile, os.R_OK):
             with open(jsonfile, "r") as fp:
@@ -56,9 +59,13 @@ class ThugBoss(thugd.DistributedThug):
 
             urls = data.get("urls")
             urls = set(urls)
-            self._add_task(urls, opts)
+            self._add_task(
+                urls = urls,
+                opts = opts,
+                timeout = timeout
+            )
 
-    def load_input(self, urls, opts=None):
+    def load_input(self, urls, **kwargs):
         """
         generates tasks from user input
             if an 'opts' is specified, it will be applied to each url
@@ -68,12 +75,21 @@ class ThugBoss(thugd.DistributedThug):
         """
         if isinstance(urls, str):
             urls = [urls]
+
+        opts = kwargs.get("opts")
         if opts:
             opts = opts.split()
-        urls = set(urls)
-        self._add_task(urls, opts)
 
-    def _add_task(self, urls, opts=None):
+        timeout = kwargs.get("timeout")
+
+        urls = set(urls)
+        self._add_task(
+            urls = urls,
+            opts = opts,
+            timeout = timeout
+        )
+
+    def _add_task(self, urls, opts=None, timeout=1800):
         """
         populates self.tasks with urls and opts input
         """
@@ -85,6 +101,7 @@ class ThugBoss(thugd.DistributedThug):
             }
             if opts:
                 task["opts"] = opts
+            task["timeout"] = timeout
             self.tasks.append(task)
 
     def _url_id(self, url):
@@ -121,9 +138,9 @@ class ThugBoss(thugd.DistributedThug):
         queues = [ self.task_queue, self.resp_queue, self.skip_queue ]
 
         for queue in queues:
+            print(thugd.console_y("[*] flushed queue: {}".format(queue)))
             while self.consume_one(queue=queue):
                 pass
-        print(thugd.console_y("[*] thug queues (task, resp, skip) flushed"))
 
     def collect(self):
         """
@@ -165,9 +182,9 @@ def main(args):
         return
 
     if args.task:
-        boss.load_tasks(jsonfile=args.task, opts=args.opts)
+        boss.load_tasks(jsonfile=args.task, opts=args.opts, timeout=args.timeout)
     if args.urls:
-        boss.load_input(urls=args.urls, opts=args.opts)
+        boss.load_input(urls=args.urls, opts=args.opts, timeout=args.timeout)
 
     try:
         if args.send:
@@ -186,6 +203,8 @@ if __name__ == "__main__":
         help="JSON taskfile")
     parser.add_argument("-u", "--urls", nargs="+",
         help="list of URLs")
+    parser.add_argument("--timeout", type=int, default=1800,
+        help="thug process timeout")
     parser.add_argument("-o", "--opts", default="-T 30 -E -v -Y -U -t 50 -u win7ie90",
         help="Thug options")
     parser.add_argument("-r", "--recv", action="store_true",

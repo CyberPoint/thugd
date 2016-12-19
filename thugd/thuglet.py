@@ -15,8 +15,6 @@ import thugd
 logging.basicConfig(level=logging.WARN, format="%(message)s")
 
 class Thuglet(thugd.DistributedThug):
-    timeout = 1800  # 30 mins
-
     def start(self):
         logging.warn(thugd.console_g("* Thuglet has started."))
         self.consume(self._callback, queue=self.task_queue)
@@ -40,7 +38,7 @@ class Thuglet(thugd.DistributedThug):
 
     def process_task(self, body):
         """
-        this gets executed per valid consummed message
+        this gets executed per valid consumed message
             publishes a response message with status of task execution
             and does some housekeeping by archiving thug analysis files
         """
@@ -49,6 +47,9 @@ class Thuglet(thugd.DistributedThug):
         url = data.get("url")
         logging.warn(thugd.console_y("+ Processing: {}".format(url)))
 
+        # default 30 mins timeout
+        timeout = data.get("timeout", 1800)
+
         command = [ "thug" ]
         opts = data.get("opts")
         if opts:
@@ -56,7 +57,7 @@ class Thuglet(thugd.DistributedThug):
                 command.append(opt)
 
         command.append(url)
-        rc, out, status = self._execute(command, url)
+        rc, out, status = self._execute(command, url, timeout)
 
         if status is False:
             self.publish(body, self.skip_queue)
@@ -71,7 +72,7 @@ class Thuglet(thugd.DistributedThug):
         self.publish(report, self.resp_queue)
         logging.warn(thugd.console_g("+ Completed: {}".format(url)))
 
-    def _execute(self, command, url):
+    def _execute(self, command, url, timeout):
         """
         execute a command
         """
@@ -83,7 +84,7 @@ class Thuglet(thugd.DistributedThug):
         status = True
         i = 1
         while p.poll() is None:
-            if i >= self.timeout:
+            if i >= timeout:
                 p.send_signal(15)
                 status = False
                 logging.error(thugd.console_r("! Timeout: {}".format(url)))
