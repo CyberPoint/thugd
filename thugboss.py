@@ -122,10 +122,34 @@ class ThugBoss(thugd.DistributedThug):
         """
         self.pending = len(self.tasks)
         print("[*] ThugBoss created {} tasks".format(self.pending))
+
         while self.tasks:
             task = self.tasks.pop()
-            print(thugd.console_y("[+] sending task: {}".format(task.get("url"))))
+            url = task.get("url")
+            print(thugd.console_y("[+] sending task: {}".format(url)))
             self.publish(task, self.task_queue)
+
+    def retry(self, opts, timeout):
+        """
+        re-publishes contents from the skip queue back into ctrl queue
+            overwrites task parameters with specified opts and timeout values
+        """
+        while True:
+            body = self.consume_one(queue=self.skip_queue)
+            if body is None:
+                break
+
+            task = body.decode()
+            task = json.loads(json.loads(task))
+
+            # overwrite old task params with retry params
+            task["timeout"] = timeout
+            task["opts"] = opts
+
+            # re-publish
+            self.publish(task, self.task_queue)
+            url = task.get("url")
+            print(thugd.console_y("[+] retry task: {}".format(url)))
 
     def flush(self):
         """
@@ -177,12 +201,17 @@ class ThugBoss(thugd.DistributedThug):
 def main(args):
     boss = ThugBoss(args.conf)
 
+    if args.retry:
+        boss.retry(opts=args.opts, timeout=args.timeout)
+        return
+
     if args.flush:
         boss.flush()
         return
 
     if args.task:
         boss.load_tasks(jsonfile=args.task, opts=args.opts, timeout=args.timeout)
+
     if args.urls:
         boss.load_input(urls=args.urls, opts=args.opts, timeout=args.timeout)
 
@@ -205,6 +234,8 @@ if __name__ == "__main__":
         help="list of URLs")
     parser.add_argument("--timeout", type=int, default=1800,
         help="thug process timeout")
+    parser.add_argument("--retry", action="store_true",
+        help="move thug_skip to thug_ctrl")
     parser.add_argument("-o", "--opts", default="-T 30 -E -v -Y -U -t 50 -u win7ie90",
         help="Thug options")
     parser.add_argument("-r", "--recv", action="store_true",
