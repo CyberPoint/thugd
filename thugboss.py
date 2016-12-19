@@ -112,18 +112,18 @@ class ThugBoss(thugd.DistributedThug):
 
     def flush(self):
         """
-        attempts to flush contents of task and response queues
+        attempts to flush contents of task, response, and skip queues
             there may be cases when not all tasks/responses are removed,
             such as when a task is in mid-processing and is placed back
             into the queue due to a failure condition, or task is finished
             and placed into the response queue
         """
-        while self.consume_one(queue=self.task_queue):
-            pass
-        print(thugd.console_y("[*] thug_ctrl queue flushed"))
-        while self.consume_one(queue=self.resp_queue):
-            pass
-        print(thugd.console_y("[*] thug_resp queue flushed"))
+        queues = [ self.task_queue, self.resp_queue, self.skip_queue ]
+
+        for queue in queues:
+            while self.consume_one(queue=queue):
+                pass
+        print(thugd.console_y("[*] thug queues (task, resp, skip) flushed"))
 
     def collect(self):
         """
