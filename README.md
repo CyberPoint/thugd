@@ -56,6 +56,11 @@ $ ./thugboss.py -t ./tasks/tasks.json
 $ ./thugboss.py -u URL1 URL2 URL3
 ```
 
+### republish tasks
+```
+$ ./thugboss.py --retry --timeout 3600
+```
+
 ## Vagrant
 This is mostly for dev/testing. Ansible provisioner handles the setup.
 ```

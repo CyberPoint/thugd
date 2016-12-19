@@ -235,7 +235,7 @@ if __name__ == "__main__":
     parser.add_argument("--timeout", type=int, default=1800,
         help="thug process timeout")
     parser.add_argument("--retry", action="store_true",
-        help="move thug_skip to thug_ctrl")
+        help="republish thug_skip tasks")
     parser.add_argument("-o", "--opts", default="-T 30 -E -v -Y -U -t 50 -u win7ie90",
         help="Thug options")
     parser.add_argument("-r", "--recv", action="store_true",
