@@ -1,4 +1,4 @@
-# docker-thugd
+# thugd
 
 distributed [thug](https://github.com/buffer/thug/) with docker containers
 
