@@ -34,10 +34,29 @@ $ sudo apt-get install mongodb python3-pika mongodb-clients
 
 ## Usage
 * Create/modify `./thugd/thugd.ini`
-* Create/modify `./tasks/tasks.json`
+* Create/modify JSON task
 * Run `docker-compose up -d`
 * (optional) scale multiple thuglets
 * Run `thugboss.py`
+
+## Task
+```
+{
+  "opts": [
+    "-T", "30",
+    "-E", "-v",
+    "-Y", "-U",
+    "-t", "50",
+    "-u", "win7ie90"
+  ],
+  "timeout": 1800,
+  "urls": [
+    "http://test.test/test1",
+    "http://test.test/test2",
+    "http://test.test/test3"
+  ]
+}
+```
 
 ## Examples
 
@@ -48,7 +67,7 @@ $ docker-compose scale thuglet=10
 
 ### use a task list
 ```
-$ ./thugboss.py -t ./tasks/tasks.json
+$ ./thugboss.py -t task.json
 ```
 
 ### use cli args
@@ -56,7 +75,7 @@ $ ./thugboss.py -t ./tasks/tasks.json
 $ ./thugboss.py -u URL1 URL2 URL3
 ```
 
-### republish tasks
+### republish skipped tasks
 ```
 $ ./thugboss.py --retry --timeout 3600
 ```
