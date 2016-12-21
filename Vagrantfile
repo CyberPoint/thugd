@@ -30,5 +30,5 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ansible.sudo = true
   end
 
-  config.vm.synced_folder ".", "/home/ubuntu/thugd"
+  config.vm.synced_folder ".", "/thugd"
 end
