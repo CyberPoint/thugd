@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN mkdir -p /etc/thug
 
-WORKDIR /home
+WORKDIR /tmp
 RUN git clone https://github.com/buffer/pyv8.git && \
   cd pyv8 && \
   python setup.py build && \
@@ -48,12 +48,10 @@ RUN groupadd -r thug && \
   chown -R thug:thug /home/thug /tmp/thug/logs
 
 RUN echo "/opt/libemu/lib/" > /etc/ld.so.conf.d/libemu.conf && ldconfig
-#RUN mkdir -p /data/thug && chown -R thug:thug /data/thug
 
 USER thug
 WORKDIR /home/thug
 COPY ["thugd.py", "thuglet.py", "thugd.ini", "/home/thug/"]
 COPY ["logging.conf", "/etc/thug/"]
 
-#VOLUME ["/data/thug"]
 CMD ["python3", "/home/thug/thuglet.py", "-c", "thugd.ini"]
