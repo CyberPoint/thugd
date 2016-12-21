@@ -43,7 +43,7 @@ $ sudo apt-get install mongodb python3-pika mongodb-clients
 ```
 {
   "opts": [
-    "-T", "30",
+    "-T", "600",
     "-E", "-v",
     "-Y", "-U",
     "-t", "50",
@@ -85,10 +85,12 @@ This is mostly for dev/testing. Ansible provisioner handles the setup.
 ```
 $ vagrant up
 $ vagrant ssh
+
+$ /thugd/thugboss.py -u httpbin.org
 ```
 
 ## Attribution
-* docker-thugd is based on thugctrl.py & thugd.py from [buffer/thug](https://github.com/buffer/thug/tree/master/tools/distributed).
+* thugd is based on thugctrl.py & thugd.py from [buffer/thug](https://github.com/buffer/thug/tree/master/tools/distributed).
 * Dockerfile is based on [remnux/thug](https://github.com/REMnux/docker/tree/master/thug).
 
 ### Original License
