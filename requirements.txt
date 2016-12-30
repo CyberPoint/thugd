@@ -1,2 +1,4 @@
+chardet
 docker-compose
 pika
+requests

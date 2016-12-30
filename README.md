@@ -24,12 +24,13 @@ Thuglets can access mongodb via TCP/27017, and is configured through
 ## Installation
 * [Docker Engine (1.10.0+)](https://docs.docker.com/engine/installation/linux/ubuntulinux/)
 * [Docker Compose (1.6+)](https://docs.docker.com/compose/install/)
+* python3 & pip3
 * mongodb
-* python3-pika
 * (optional) mongodb-clients
 
 ```
-$ sudo apt-get install mongodb python3-pika mongodb-clients
+apt-get install mongodb mongodb-clients
+pip3 install -r requirements.txt
 ```
 
 ## Usage
