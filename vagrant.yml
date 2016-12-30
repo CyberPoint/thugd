@@ -80,7 +80,6 @@
       - python-pip
       - python3
       - python3-pip
-      - python3-pika
       - tcpdump
       - tmux
       - tree
@@ -104,9 +103,8 @@
       pip:
         name: "{{item}}"
         state: latest
-      with_items:
-      - docker-compose
-      - pika
+        executable: pip3
+        requirements: /thugd/requirements.txt
 
     - name: update facts
       setup:
